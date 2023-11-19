@@ -123,7 +123,7 @@ void strassen(vector< vector<int> >& A, vector< vector<int> >& B, vector< vector
 
 int main() 
 {
-    int n = 4;
+    int n = (1<<8);
     
     int** matrixA = new int*[n];
     int** matrixB = new int*[n];
