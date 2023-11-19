@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int16_t dotProduct(const vector<int>& vector1, const vector<int>& vector2) 
+int dotProduct(const vector<int>& vector1, const vector<int>& vector2) 
 {	
     int dot = 0;
     for (size_t i = 0; i < vector1.size(); i++) 
