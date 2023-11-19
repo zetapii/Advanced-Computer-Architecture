@@ -523,6 +523,6 @@ We can see that the optimal cache configuration is :
 
 Note that miss ratio is calculated by combining  the read and write misses , and also combining  the L1 and L2 misses.
 
-![Untitled](Report/Untitled.png)
+![Untitled](Images/graph.png)
 
 From the above graph we can see that after the red point , there is no significant reduction in miss ratio even if the cache sizes are increased. Thus the point **32 KB L1 , 64 KB L2**  is optimal.
