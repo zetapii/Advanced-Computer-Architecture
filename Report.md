@@ -14,11 +14,11 @@ Roll Number : 2021101004
 
 using namespace std;
 
-double dotProduct(const vector<double>& vector1, const vector<double>& vector2) 
+int dotProduct(const vector<int>& vector1, const vector<int>& vector2) 
 {	
-    double dot = 0.0;
-    for (size_t i = 0; i < vector1.size(); ++i) 
-		{
+    int dot = 0;
+    for (size_t i = 0; i < vector1.size(); i++) 
+	{
         dot += vector1[i] * vector2[i];
     }
     return dot;
@@ -26,10 +26,10 @@ double dotProduct(const vector<double>& vector1, const vector<double>& vector2)
 
 int main() 
 {
-    vector<double> vector_a = {1, 2, 3};
-    vector<double> vector_b = {4, 5, 6};
-
-    double result = dotProduct(vector_a, vector_b);
+    vector<int> vector_a = {1, 2, 3};
+    vector<int> vector_b = {4, 5, 6};
+ 
+    int result = dotProduct(vector_a, vector_b);
     cout << " dot product : " << result << endl;
 
     return 0;
@@ -46,11 +46,10 @@ int main()
 int dot_product_vectorized(const std::vector<int> &x, const std::vector<int> &y)
 {
     const size_t vectorSize = x.size();
-    const size_t simdSize = 8; // AVX2 registers can handle 8 integers at a time
 
     __m256i sum = _mm256_setzero_si256();
 
-    for (size_t i = 0; i < vectorSize; i += simdSize)
+    for (size_t i = 0; i < vectorSize; i += 8)  // AVX2 registers can handle 8 integers at a time
     {
         __m256i x_vec = _mm256_loadu_si256((__m256i *)&x[i]);
         __m256i y_vec = _mm256_loadu_si256((__m256i *)&y[i]);
@@ -63,9 +62,8 @@ int dot_product_vectorized(const std::vector<int> &x, const std::vector<int> &y)
     _mm256_store_si256((__m256i *)result, sum);
 
     int finalResult = 0;
-    for (int i = 0; i < simdSize; ++i) {
+    for (int i = 0; i < 8; ++i) 
         finalResult += result[i];
-    }
 
     return finalResult;
 }
@@ -75,16 +73,8 @@ int main()
     std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8};
     std::vector<int> y = {2, 3, 4, 5, 6, 7, 8, 9};
 
-    try
-    {
-        int result = dot_product_vectorized(x, y);
-        std::cout << "Dot product of all elements: " << result << std::endl;
-    }
-    catch (const std::invalid_argument &e)
-    {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-
+    int result = dot_product_vectorized(x, y);
+    std::cout<< result << std::endl;
     return 0;
 }
 ```
@@ -96,12 +86,13 @@ int main()
 #include <vector>
 #include <immintrin.h>
 
-int dot_product_even_indices(const std::vector<int>& x, const std::vector<int>& y) {
+int dot_product_even_indices(const std::vector<int>& x, const std::vector<int>& y) 
+{
 
     __m256i sum = _mm256_setzero_si256();
 
     for (size_t i = 0; i < x.size(); i += 8)
-		{
+	{
         __m256i x_vec = _mm256_loadu_si256((__m256i*)&x[i]);
         __m256i y_vec = _mm256_loadu_si256((__m256i*)&y[i]);
 
@@ -123,14 +114,16 @@ int dot_product_even_indices(const std::vector<int>& x, const std::vector<int>& 
 
 int main() 
 {
-    std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8}; 
+    std::vector<int> x = {1, 1, 1, 1, 1, 1, 1, 1}; 
+    std::vector<int> y = {1, 2, 3, 4, 5, 6, 7, 8}; 
+
 	  int result = dot_product_even_indices(x, y);
-		cout<<result;
+    std::cout<<result;
     return 0;
 }
 ```
 
-(d) Program to compute memory bandwidth of our system : 
+(d) Program to compute memory bandwidth of our system. We just try to allocate memory for large arrays and take the average of the bandwidth for multiple iterations.
 
 ```jsx
 #include <iostream>
@@ -150,7 +143,7 @@ int main()
 {
     double total_bandwidth = 0.0;
     for(int run = 0; run < NUM_RUNS; ++run) 
-	{
+	  {
         double* A = new double[ARRAY_SIZE];
         double* B = new double[ARRAY_SIZE];
         for(long long i = 0; i < ARRAY_SIZE; ++i) 
@@ -194,11 +187,19 @@ print(f"Estimated Peak GFLOPS: {peak_gflops:.2f}")
 
 Thus we get : **Estimated Peak GFLOPS/sec: 224.00**
 
-(f) From above data we see that a program is compute bound if and only if 
+(f) We will use the roofline analysis for this.
 
-Operational Intensity ≥ 159.91 FLOPS/Byte.
+![Untitled](Images/Untitled.png)
 
-We got the above by using roofline analysis , dividing peak GFLOPS WITH the bandwidth.  
+We know that a program is compute bound iff :
+
+**Operational Intensity ≥ (Peak GFLOPS)/Bandwidth**
+
+From above data we see that a program is compute bound if and only if 
+
+**Operational Intensity ≥ 159.91 FLOPS/Byte.**
+
+We got the above by using roofline analysis , dividing peak GFLOPS with the bandwidth of our system.
 
 Now we will calculate operational intensity for each of the above cases:
 
@@ -344,7 +345,9 @@ void strassen(vector<vector<int>>& A, vector<vector<int>>& B, vector<vector<int>
 }
 ```
 
-(b) We get the following data for the various matrix sizes by varying k. Note that N was varied till 512 only otherwise it will take too much time for benchmarking of an N^3 algorithm(Strassen Matrix Multiplication has large constant factor so it takes too much time for N=2^10).
+(b) We get the following data for the various matrix sizes by varying k. Note that N was varied till 512 only otherwise it will take too much time for benchmarking of an N^3 algorithm with very large constant factor(Strassen Matrix Multiplication has large constant factor so it takes too much time for N=2^10).
+
+Matrix size N*N
 
 Strassen Multiplication
 
@@ -368,35 +371,9 @@ Usual 3d Loop
 | 256 | 2,11,17,85,064 | 0.458 | 0.35 | 13.80 | 32.61 |
 | 512 | 16,82,39,95,629 | 0.413 | 3.69 | 24.11 | 10.55 |
 
-Code executed(mmap is used because sbrk can work only upto a certain limit in cachegrind) : 
-
-```jsx
-void cal()
-{
-	const int n=4000;
-	float* X = new float[n];
-	float* A = new float[n];
-	float (B)[n]=(float()[n])mmap(NULL,n*n*sizeof(float),PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-	for(int i=0;i<n;i++)
-	{
-	
-    	X[i]=(i%2==0)?3:5;
-		for(int j=0;j<n;j++)
-			B[i][j]=(j%2==0)?5:8;
-	}
-	for(int i=0;i<n;i++)
-	{
-		A[i]=0;
-		for(int j=1;j<n-1;j++)
-		{
-			A[i]+=0.33*(B[i][j]*X[j]);
-		}
-	}
-    return ;
-}
-```
-
 (c) Tiled Version of Matrix Multiplication :
+
+Note that the analysis is for matrix dimension we will analyse for **512*512** matrix only otherwise it will take too much time for benchmarking of an N^3 algorithm with very large constant factor.
 
 ```jsx
 void mulBlocking(int n, double** matrixA, double** matrixB, double** matrixC)
@@ -432,27 +409,50 @@ void mulBlocking(int n, double** matrixA, double** matrixB, double** matrixC)
 }
 ```
 
-We get the following analytics for blocked matrix multiplication : 
+Notation :
 
-| Dr | D1mr | DLmr | Dw | D1mw | DLmw | Block Size |
-| --- | --- | --- | --- | --- | --- | --- |
-| 3,623,878,656 | 3,972,995 | 1,105,401 | 134,217,728 | 0 | 0c | 8  |
-| 3,623,878,656 | 1,536,032 | 568,817 | 134,217,728 | 0 | 0 | 16 |
-| 3,623,878,656 | 661,659 | 300,513 | 134,217,728 | 0 | 0 | 32 |
-| 3,623,878,656 | 479,940 | 166,337 | 134,217,728 | 0 | 0 | 64 |
-| 3,623,878,656 | 9,321,210 | 99,201 | 134,217,728 | 0 | 0 | 128 |
+Dr →Total  Data read
 
-Notice that D1mw and Dlmw is zero as matrixC[i][j]+=….. ⇒ matrix element at {i,j} is first loaded and then write is done , hence its in the cache because of the prior load.
+D1mr → L1 data miss reads
+
+DLmr → L2 data miss reads
+
+Dw → Total Data Write
+
+D1mw → L1 data miss writes
+
+Dlmw → L2 data miss writes
+
+**We get the following analytics for blocked matrix multiplication for the :  32 KB L1
+cache, 1 MB L2 cache with line size64 bytes.**
+
+miss rate = (d1mr+dLmr) / (dr+dw)
+
+| Dr | D1mr | DLmr | Dw | D1mw | DLmw | Block Size | Miss Ratio | Instructions |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 3,623,878,656 | 3,972,995 | 1,105,401 | 134,217,728 | 0 | 0 | 8  | 0.00135 | 25,65,309 |
+| 3,623,878,656 | 1,536,032 | 568,817 | 134,217,728 | 0 | 0 | 16 | 0.00056 | 25,65,316 |
+| 3,623,878,656 | 661,659 | 300,513 | 134,217,728 | 0 | 0 | 32 | 0.00026 | 25,65,310 |
+| 3,623,878,656 | 479,940 | 166,337 | 134,217,728 | 0 | 0 | 64 | 0.00017 | 25,65,311 |
+| 3,623,878,656 | 9,321,210 | 99,201 | 134,217,728 | 0 | 0 | 128 | 0.00250 | 25,65,316 |
+
+**Notice that D1mw and Dlmw is zero as matrixC[i][j]+=….. ⇒ matrix element at {i,j} is first loaded and then write is done , hence its in the cache because of the prior load.Thus writing causes no misses, because the prior load causes cache miss.**
+
+**We can see that the best block size comes out to be 64 for the given configuration(we combine the total miss and see that D1mr+DLmr is least for block size 64).**
 
 Similarly we get the following analytics for recursive strassen’s matrix multiplication :
 
-| Dr | D1mr | DLmr | Dw | D1mw | DLmw |
-| --- | --- | --- | --- | --- | --- |
-| 754,353,232 | 403,456 | 25,499 | 569,298,260 | 422,241 | 219,509 |
+| Dr | D1mr | DLmr | Dw | D1mw | DLmw | Miss Ratio | Instructions Executed |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 754,353,232 | 403,456 | 25,499 | 569,298,260 | 422,241 | 219,509 | 0.00032 | 3,55,00,11,03,750 |
 
-We note that recursive strassen’s matrix multiplication performs close to blocked matrix multiplication(Cache oblivious algorithm).
+We note that recursive strassen’s matrix multiplication performs close to blocked matrix multiplication(having block size 16/32) in terms of cache performance .However the instructions executed is extremely high compared with blocking algorithm. We can also confirm from this that recursive Strassen’s matrix multiplication is Cache oblivious algorithm but with significantly more constant factor.
 
-Also compare instructions executed?
+We get the following graphs : 
+
+![Untitled](Images.png)
+
+![Untitled](Images.png)
 
 ### Question 3
 
@@ -467,25 +467,58 @@ for (i = 0; i < n - 1; i++)
 }
 ```
 
+We run the following code : 
+
+Code executed(mmap is used because sbrk can work only upto a certain limit in cachegrind, and **malloc** as well as **new** operator uses sbrk) :
+
+```jsx
+void cal()
+{
+	const int n=4000;
+	float* X = new float[n];
+	float* A = new float[n];
+	float (B)[n]=(float()[n])mmap(NULL,n*n*sizeof(float),PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	for(int i=0;i<n;i++)
+	{
+    	X[i]=(i%2==0)?3:5;
+		for(int j=0;j<n;j++)
+			B[i][j]=(j%2==0)?5:8;
+	}
+	for(int i=0;i<n;i++)
+	{
+		A[i]=0;
+		for(int j=1;j<n-1;j++)
+		{
+			A[i]+=0.33*(B[i][j]*X[j]);
+		}
+	}
+  return ;
+}
+```
+
 We get the following data by varying L1,L2 and L3 cache sizes.
+
+Note that fully associative was achieved by setting the line_size = cache_size/block_size
 
 We vary in the following way : 
 
-Row 1 →  8     KB L1   and 016 KB L2
+Row 1 →  8     KB L1   and 016 KB L2 , fully associative LRU
 
-Row 2 → 16    KB L1   and 032 KB L2
+Row 2 → 16    KB L1   and 032 KB L2 , fully associative LRU
 
-Row 3 → 32   KB L1   and 064 KB L2
+Row 3 → 32   KB L1   and 064 KB L2 , fully associative LRU
 
-Row 4 → 64   KB L1   and 128 KB L2
+Row 4 → 64   KB L1   and 128 KB L2 , fully associative LRU
 
-Row 5 → 128  KB L1   and 256 KB L2
+Row 5 → 128  KB L1   and 256 KB L2 , fully associative LRU
 
-Row 6 → 256  KB L1  and 512 KB L2
+Row 6 → 256  KB L1  and 512 KB L2 , fully associative LRU
 
-Row 7 → 512   KB L1  and 001 MB L2
+Row 7 → 512   KB L1  and 001 MB L2 , fully associative LRU
 
-Row 8 → 001   MB L1 and 002 MB L2
+Row 8 → 001   MB L1 and 002 MB L2 ,fully associative LRU
+
+Line sized used is 64 bytes in all of the rows.
 
 S1 : 
 
@@ -500,7 +533,7 @@ S1 :
 | 8000 | 0 | 0 | 4000 | 250 | 250 |
 | 8000 | 0 | 0 | 4000 | 250 | 250 |
 
-**For S1 , we can see that all the misses are the compulsory misses , so increasing cache size doesn’t offer any improve in performance.**
+***Analysis : For S1 , we can see that all the misses are the compulsory misses , so increasing cache size doesn’t offer any improve in performance.***
 
 S2: 
 
@@ -515,7 +548,21 @@ S2:
 | 207,896,000 | 1,000,248 | 1,000,247 | 15,992,000 | 0 | 0 |
 | 207,896,000 | 1,000,246 | 1,000,243 | 15,992,000 | 0 | 0 |
 
-**For S2, we can see that write misses are zero, because data to be written - A[i] is already brought in the cache by S1.**
+***For S2, we can see that write misses are zero, because data to be written - A[i] is already brought in the cache by S1.***
+
+Notation :
+
+Dr →Total  Data read
+
+D1mr → L1 data miss reads
+
+DLmr → L2 data miss reads
+
+Dw → Total Data Write
+
+D1mw → L1 data miss writes
+
+Dlmw → L2 data miss writes
 
 We can see that the optimal cache configuration is : 
 
@@ -523,6 +570,6 @@ We can see that the optimal cache configuration is :
 
 Note that miss ratio is calculated by combining  the read and write misses , and also combining  the L1 and L2 misses.
 
-![Untitled](Images/graph.png)
+![Untitled](Images/Untitled%203.png)
 
 From the above graph we can see that after the red point , there is no significant reduction in miss ratio even if the cache sizes are increased. Thus the point **32 KB L1 , 64 KB L2**  is optimal.

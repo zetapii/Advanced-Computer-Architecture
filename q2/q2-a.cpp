@@ -22,6 +22,7 @@ void matrixMul(int n, int** matrixA, int** matrixB, int** matrixC)
 }
 
 
+//strassen matrix multiplication
 void add(vector<vector<int> >& A, vector<vector<int> >& B, vector<vector<int> >& C, int size) 
 {
     for (int i = 0; i < size; i++)

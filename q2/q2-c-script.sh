@@ -14,7 +14,7 @@ L2_LINES=$((L2_SIZE / LINE_SIZE))
 for BLOCK_SIZE in "${BLOCK_SIZES[@]}"; do
   echo "Running with block size: $BLOCK_SIZE..."
 
-  valgrind --tool=cachegrind --I1=$L1_SIZE,$L1_LINES,$LINE_SIZE --D1=$L1_SIZE,$L1_LINES,$LINE_SIZE --L2=$L2_SIZE,$L2_LINES,$LINE_SIZE ./a.out "$BLOCK_SIZE"
+  valgrind  --tool=cachegrind --I1=$L1_SIZE,$L1_LINES,$LINE_SIZE --D1=$L1_SIZE,$L1_LINES,$LINE_SIZE --L2=$L2_SIZE,$L2_LINES,$LINE_SIZE ./a.out "$BLOCK_SIZE"
 
   LAST_FILE=$(ls -t cachegrind.out.* | head -n 1)
   
