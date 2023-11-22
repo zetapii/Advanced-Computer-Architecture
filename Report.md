@@ -450,9 +450,9 @@ We note that recursive strassen’s matrix multiplication performs close to bloc
 
 We get the following graphs : 
 
-![Untitled](Images.png)
+![Untitled](Images/Untitled%201.png)
 
-![Untitled](Images.png)
+![Untitled](Images/Untitled%202.png)
 
 ### Question 3
 
