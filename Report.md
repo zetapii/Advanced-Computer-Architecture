@@ -450,9 +450,9 @@ We note that recursive strassen’s matrix multiplication performs close to bloc
 
 We get the following graphs : 
 
-![Untitled](Images/Untitled%201.png)
+![Untitled](Images/Untitled1.png)
 
-![Untitled](Images/Untitled%202.png)
+![Untitled](Images/Untitled2.png)
 
 ### Question 3
 
@@ -570,6 +570,6 @@ We can see that the optimal cache configuration is :
 
 Note that miss ratio is calculated by combining  the read and write misses , and also combining  the L1 and L2 misses.
 
-![Untitled](Images/Untitled%203.png)
+![Untitled](Images/Untitled3.png)
 
 From the above graph we can see that after the red point , there is no significant reduction in miss ratio even if the cache sizes are increased. Thus the point **32 KB L1 , 64 KB L2**  is optimal.
